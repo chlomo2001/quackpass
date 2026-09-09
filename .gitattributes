@@ -1,0 +1,6 @@
+# Keep line endings stable across machines.
+* text=auto eol=lf
+
+*.png binary
+*.zip binary
+*.crx binary
