@@ -44,13 +44,18 @@ QuackPass shows your Ryanair boarding passes in your browser, so you are not
 stuck if your phone is dead, lost, out of storage, or simply not with you.
 
 Log in on ryanair.com as you normally would, click the duck, and your checked-in
-passes appear — with the scannable barcode, seat, sequence number and boarding
-time.
+passes appear — with the scannable barcode, seat, sequence number, and the times
+that matter at the airport.
 
 
 WHAT YOU CAN DO
 
 • See the scannable barcode for every checked-in passenger.
+• See the gate closing time, departure time, arrival time, and the terminal
+  where there is one. The gate closes 30 minutes before departure, and the
+  ticket says so.
+• See the full airport names, the booking reference, and the Hebrew calendar
+  date alongside the usual one.
 • Save an Apple Wallet pass (.pkpass) for your iPhone.
 • Add a pass to Google Wallet on Android.
 • Save or copy a ticket as a sharp PNG image.
@@ -93,6 +98,9 @@ HOW TO USE IT
 GOOD TO KNOW
 
 • You must already be checked in. Passes do not exist before check-in opens.
+• If Ryanair returns a pass with no barcode, QuackPass says so in plain words
+  instead of showing you a blank space, and names the destination country so
+  you know which entry documents to sort out.
 • Some airports and airlines will not accept a printed or screenshotted pass.
   Check the rules for your route before you rely on it.
 • QuackPass is an independent tool. It is not affiliated with, endorsed by,
