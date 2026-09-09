@@ -3,8 +3,10 @@
 Everything the Developer Dashboard asks for. Fill the two placeholders before
 you submit:
 
-- `<PRIVACY_URL>` — where you host `docs/privacy-policy.html` (see the repo setup in README.md)
-- `<CONTACT_EMAIL>` — the address you want support mail at
+Both are filled in already:
+
+- Privacy policy: https://chlomo2001.github.io/quackpass/privacy-policy.html
+- Contact: oiberchuchem1@gmail.com
 
 The **upload package is already built**: `../../quackpass-1.0.0.zip`
 (manifest at the archive root, `dev/` and `store/` excluded, forward-slash paths,
@@ -184,7 +186,7 @@ Tick **nothing** in the data collection list, then certify all three statements:
 ### Privacy policy URL
 
 ```
-<PRIVACY_URL>
+https://chlomo2001.github.io/quackpass/privacy-policy.html
 ```
 
 ---

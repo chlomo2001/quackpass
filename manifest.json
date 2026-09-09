@@ -4,6 +4,7 @@
   "short_name": "QuackPass",
   "version": "1.0.0",
   "description": "View, save and print your Ryanair boarding passes in your browser. No phone needed. Runs locally, nothing is uploaded.",
+  "homepage_url": "https://chlomo2001.github.io/quackpass/",
   "minimum_chrome_version": "103",
   "icons": {
     "16": "icons/icon16.png",
