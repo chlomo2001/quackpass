@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuackPass — Boarding Passes in Your Browser</title>
+<meta name="description" content="A browser extension that shows, saves and prints your Ryanair boarding passes. No phone needed. Runs locally, nothing is uploaded." />
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #16181d;
+    --muted: #5b6472;
+    --line: #e3e7ec;
+    --card: #f7f9fb;
+    --accent: #073590;
+    --accent-fg: #ffffff;
+    --duck: #f1c933;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --fg: #e8eaed;
+      --muted: #a0a8b4;
+      --line: #2a2e35;
+      --card: #1c1f25;
+      --accent: #f1c933;
+      --accent-fg: #14161a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 20px 80px;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  main { max-width: 760px; margin: 0 auto; }
+
+  header { padding: 64px 0 40px; text-align: center; }
+  .duck { font-size: 56px; line-height: 1; }
+  h1 { font-size: 34px; line-height: 1.15; margin: 14px 0 8px; }
+  .tagline { color: var(--muted); font-size: 18px; margin: 0; }
+
+  .cta { margin-top: 26px; }
+  .button {
+    display: inline-block;
+    padding: 11px 22px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .button.secondary {
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--line);
+    margin-left: 8px;
+  }
+
+  h2 { font-size: 21px; margin: 44px 0 12px; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 7px; }
+
+  .note {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 28px 0;
+  }
+  .note p { margin: 0; }
+
+  code {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.88em;
+  }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+  }
+  a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+
+  <header>
+    <div class="duck" aria-hidden="true">🦆</div>
+    <h1>QuackPass</h1>
+    <p class="tagline">Your Ryanair boarding passes, in your browser.<br>No phone needed.</p>
+    <div class="cta">
+      <a class="button" href="privacy-policy.html">Privacy policy</a>
+      <a class="button secondary" href="https://github.com/">Source code</a>
+    </div>
+  </header>
+
+  <h2>What it does</h2>
+  <ul>
+    <li>Shows the scannable barcode for every checked-in passenger.</li>
+    <li>Saves an Apple Wallet <code>.pkpass</code>, or adds the pass to Google Wallet.</li>
+    <li>Saves a ticket as a sharp PNG, or prints an A4 sheet of wallet-size tickets with cut lines.</li>
+    <li>Downloads a whole booking at once as a ZIP.</li>
+    <li>Shows gate closing, departure and arrival times, and the terminal where there is one.</li>
+    <li>Adds a button to the airline's own booking page, so your passes are one click away.</li>
+  </ul>
+
+  <div class="note">
+    <p><strong>Nothing is uploaded.</strong> QuackPass has no servers and no
+    analytics. It talks to the airline's website using the session you are
+    already logged into, and everything else happens inside your browser.</p>
+  </div>
+
+  <h2>Install</h2>
+  <ul>
+    <li>From the Chrome Web Store, once the listing is live.</li>
+    <li>Or load it unpacked: download the source, open <code>chrome://extensions</code>,
+      turn on Developer mode, and choose <strong>Load unpacked</strong>.</li>
+  </ul>
+
+  <h2>Good to know</h2>
+  <ul>
+    <li>You must already be checked in — passes do not exist before then.</li>
+    <li>Some airports and airlines will not accept a printed or screenshotted pass.
+      Check the rules for your route before relying on it.</li>
+    <li>The gate closes 30 minutes before the departure time on your ticket.</li>
+  </ul>
+
+  <footer>
+    QuackPass is free and open source, licensed under the GPL-3.0.<br>
+    It is an independent tool — not affiliated with, endorsed by, authorised by,
+    or connected to Ryanair. All trademarks belong to their owners.
+  </footer>
+
+</main>
+</body>
+</html>

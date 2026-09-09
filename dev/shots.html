@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>QuackPass — store screenshots</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; background: #fff; }
+
+      .stage {
+        width: 1280px;
+        height: 800px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 56px;
+        padding: 0 72px;
+        background: linear-gradient(135deg, #073590 0%, #0a47bd 100%);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        color: #fff;
+      }
+
+      .copy { width: 470px; flex: none; }
+      .copy h1 {
+        font-size: 46px;
+        line-height: 1.1;
+        margin: 0 0 18px;
+        letter-spacing: -0.02em;
+      }
+      .copy h1 em { font-style: normal; color: #f1c933; }
+      .copy p { font-size: 20px; line-height: 1.5; margin: 0 0 14px; color: #d8e2f7; }
+      .copy ul { margin: 18px 0 0; padding: 0; list-style: none; }
+      .copy li {
+        font-size: 18px;
+        line-height: 1.5;
+        padding-left: 30px;
+        margin-bottom: 10px;
+        position: relative;
+        color: #eef3ff;
+      }
+      .copy li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 9px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #f1c933;
+      }
+
+      .art {
+        flex: 1;
+        height: 800px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      /* A window frame so the popup reads as a real browser popup. */
+      .frame {
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 30px 70px rgba(0, 0, 0, 0.42);
+      }
+      .frame-bar {
+        height: 30px;
+        background: #eceff3;
+        border-bottom: 1px solid #dde1e7;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0 12px;
+      }
+      .dot { width: 10px; height: 10px; border-radius: 50%; background: #cfd4db; }
+
+      iframe { border: 0; display: block; }
+
+      .paper {
+        background: #fff;
+        box-shadow: 0 30px 70px rgba(0, 0, 0, 0.42);
+      }
+      .paper img { display: block; }
+
+      .wide .copy { width: 400px; }
+    </style>
+  </head>
+  <body>
+    <div class="stage" id="stage"></div>
+
+    <script>
+      const SHOTS = {
+        1: {
+          title: 'Your boarding pass,<br><em>without your phone</em>',
+          lead: 'Log in as usual, click the duck, and every checked-in passenger is there.',
+          bullets: ['Works on any computer', 'Nothing to install on your phone', 'Runs entirely in your browser'],
+        },
+        2: {
+          title: 'The real barcode,<br><em>ready to scan</em>',
+          lead: 'Seat, gate closing time, departure and arrival, and a scannable code for each passenger.',
+          bullets: ['Save as an image', 'Apple Wallet and Google Wallet', 'Copy straight to a message'],
+        },
+        3: {
+          title: 'Print an A4 sheet<br><em>of wallet-size tickets</em>',
+          lead: 'Everyone in the booking on one page, with dashed lines to cut along.',
+          bullets: ['Never bigger than wallet size', 'All on one page, or one per page', 'Sharp, lossless barcodes'],
+        },
+        4: {
+          title: 'Right where<br><em>you need it</em>',
+          lead: 'A button appears on the booking page itself, next to the airline’s own one.',
+          bullets: ['No hunting through menus', 'Opens your passes in a new tab', 'One click from check-in'],
+        },
+      };
+
+      const shot = Number(new URLSearchParams(location.search).get('shot') || 1);
+      const stage = document.getElementById('stage');
+      const config = SHOTS[shot];
+
+      const copy = document.createElement('div');
+      copy.className = 'copy';
+      copy.innerHTML =
+        `<h1>${config.title}</h1><p>${config.lead}</p><ul>` +
+        config.bullets.map((b) => `<li>${b}</li>`).join('') +
+        '</ul>';
+
+      const art = document.createElement('div');
+      art.className = 'art';
+
+      stage.append(copy, art);
+
+      function framedIframe(src, width, height, scale) {
+        const frame = document.createElement('div');
+        frame.className = 'frame';
+        frame.style.width = `${width * scale}px`;
+
+        const bar = document.createElement('div');
+        bar.className = 'frame-bar';
+        bar.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+
+        const holder = document.createElement('div');
+        holder.style.cssText = `width:${width * scale}px;height:${height * scale}px;overflow:hidden`;
+
+        const iframe = document.createElement('iframe');
+        iframe.src = src;
+        iframe.width = width;
+        iframe.height = height;
+        iframe.style.cssText = `transform:scale(${scale});transform-origin:top left`;
+
+        holder.appendChild(iframe);
+        frame.append(bar, holder);
+        art.appendChild(frame);
+        return iframe;
+      }
+
+      const settle = (ms) => new Promise((r) => setTimeout(r, ms));
+
+      function waitForLoad(iframe) {
+        return new Promise((resolve) => iframe.addEventListener('load', resolve, { once: true }));
+      }
+
+      // Pulls the A4 page back out of the PDF the popup just built, so the
+      // screenshot shows the genuine printed output.
+      async function renderA4(iframe) {
+        const win = iframe.contentWindow;
+        const doc = iframe.contentDocument;
+
+        win.__lastDownload = null;
+        doc.getElementById('btn-a4').click();
+
+        for (let i = 0; i < 120 && !win.__lastDownload; i++) await settle(250);
+        const bytes = win.__lastDownload.bytes;
+
+        const text = new TextDecoder('latin1').decode(bytes);
+        const at = text.indexOf('/Subtype /Image');
+        const dict = text.slice(at, at + 300);
+        const width = +/\/Width (\d+)/.exec(dict)[1];
+        const height = +/\/Height (\d+)/.exec(dict)[1];
+        const length = +/\/Length (\d+)/.exec(dict)[1];
+        const start = text.indexOf('stream\n', at) + 'stream\n'.length;
+
+        const inflated = new Uint8Array(
+          await new Response(
+            new Blob([bytes.slice(start, start + length)])
+              .stream()
+              .pipeThrough(new DecompressionStream('deflate'))
+          ).arrayBuffer()
+        );
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        const image = ctx.createImageData(width, height);
+        for (let i = 0, j = 0; j < inflated.length; i += 4, j += 3) {
+          image.data[i] = inflated[j];
+          image.data[i + 1] = inflated[j + 1];
+          image.data[i + 2] = inflated[j + 2];
+          image.data[i + 3] = 255;
+        }
+        ctx.putImageData(image, 0, 0);
+        return canvas;
+      }
+
+      async function build() {
+        if (shot === 1) {
+          const iframe = framedIframe('mock.html', 380, 490, 1.42);
+          await waitForLoad(iframe);
+          await settle(900);
+        }
+
+        if (shot === 2) {
+          const iframe = framedIframe('mock.html', 380, 620, 1.16);
+          await waitForLoad(iframe);
+          await settle(700);
+          const doc = iframe.contentDocument;
+          doc.querySelector('.pass button[data-action="qr"]').click();
+          await settle(700);
+          doc.querySelector('.pass').scrollIntoView();
+          await settle(400);
+        }
+
+        if (shot === 3) {
+          const iframe = framedIframe('mock.html', 380, 400, 1);
+          iframe.parentElement.parentElement.style.display = 'none';
+          await waitForLoad(iframe);
+          await settle(800);
+
+          const canvas = await renderA4(iframe);
+          const paper = document.createElement('div');
+          paper.className = 'paper';
+          const img = document.createElement('img');
+          img.src = canvas.toDataURL('image/png');
+          img.style.cssText = 'width:496px;height:auto';
+          paper.appendChild(img);
+          art.appendChild(paper);
+          await settle(500);
+        }
+
+        if (shot === 4) {
+          stage.classList.add('wide');
+          const iframe = framedIframe('mock-site.html', 900, 300, 0.70);
+          await waitForLoad(iframe);
+          await settle(900);
+        }
+
+        window.__ready = true;
+      }
+
+      build();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>QuackPass — mock</title>
+    <link rel="stylesheet" href="../popup/popup.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="header-title">QuackPass <span aria-hidden="true">🦆</span></div>
+      <div class="header-tagline">Boarding passes, in your browser</div>
+    </header>
+
+    <div id="bulk-actions"></div>
+    <div id="search-bar"></div>
+    <div id="passes"></div>
+    <div id="status">Idle</div>
+
+    <script>
+      // Stand-in for the extension APIs so the popup can run as a plain page.
+      const BOOKING = "G9VHHE";
+      const makePass = (i, first, last, seat) => ({
+        pnr: BOOKING,
+        paxType: "ADT",
+        sequence: 10 + i,
+        priority: i % 2 === 0,
+        barcode: "M1" + last.toUpperCase() + "/" + first[0] + "  ABC12" + i + " DUBSTNFR 1234 250Y00" + (10 + i) + "A",
+        boardingTime: "2026-10-12T06:35:00Z",
+        name: { first, last },
+        departure: {
+          code: "DUB",
+          date: "2026-10-12T07:05:00Z",
+          terminal: i === 1 ? "1" : undefined,
+        },
+        arrival: { code: "STN" },
+        flight: { carrierCode: "FR", number: "12" + i },
+        seat: { designator: seat },
+      });
+
+      const passes = [
+        makePass(1, "Anna", "Kowalska", "12A"),
+        makePass(2, "Piotr", "Nowak", "12B"),
+        makePass(3, "Maria", "Silva", "12C"),
+        makePass(4, "John", "Byrne", "12D"),
+        makePass(5, "Ewa", "Zielinska", "12E"),
+        makePass(6, "Tom", "O Connor", "12F"),
+        // Real-world case: Ryanair issues the pass with no barcode when the
+        // passenger's entry documents are not cleared for the destination.
+        {
+          pnr: "RVEVWY",
+          paxType: "ADT",
+          sequence: 41,
+          priority: false,
+          barcode: "",
+          boardingTime: "2026-09-22T12:55:00Z",
+          name: { first: "Hendrik", last: "Grunnfeld" },
+          departure: { code: "CRL", date: "2026-09-22T13:25:00Z" },
+          arrival: { code: "MAN" },
+          flight: { carrierCode: "FR", number: "3223" },
+          seat: { designator: "24F" },
+        },
+      ];
+
+      const flights = [
+        {
+          bookingId: 999,
+          pnr: "ZZZ999",
+          origin: "STN",
+          destination: "DUB",
+          date: "2026-11-02T18:20:00Z",
+          flightNumber: "FR555",
+          checkinStatus: "nocheckin",
+          isReady: false,
+          checkInOpenUTC: "2026-10-31T18:20:00Z",
+          checkInCloseUTC: "2026-11-02T16:20:00Z",
+        },
+      ];
+
+      // The bookings response also carries arrival times, matched by pnr+flight.
+      flights.push(
+        { pnr: BOOKING, flightNumber: "FR121", arrivalDate: "2026-10-12T08:20:00Z" },
+        { pnr: "RVEVWY", flightNumber: "FR3223", arrivalDate: "2026-09-22T14:35:00Z" }
+      );
+
+      const downloadPayloads = passes.map((p) => ({
+        sequenceNumber: String(p.sequence),
+        lang: "en",
+        arrivalStation: p.arrival.code,
+        departureStation: p.departure.code,
+        recordLocator: p.pnr,
+        isInfant: false,
+      }));
+
+      window.chrome = {
+        runtime: {
+          lastError: null,
+          sendMessage: (_msg, cb) => cb({ ok: true, data: { passes, downloadPayloads, flights } }),
+        },
+        storage: { local: { get: async () => ({}), set: () => {} } },
+        downloads: {
+          download: async (o) => {
+            // Grab the bytes before the popup revokes the object URL.
+            const bytes = await new Promise((res, rej) => {
+              const x = new XMLHttpRequest();
+              x.open("GET", o.url);
+              x.responseType = "arraybuffer";
+              x.onload = () => res(new Uint8Array(x.response));
+              x.onerror = rej;
+              x.send();
+            });
+            window.__lastDownload = { filename: o.filename, bytes };
+            console.log("download()", o.filename, bytes.length);
+          },
+        },
+        tabs: { create: async (o) => console.log("tabs.create()", o.url) },
+      };
+
+      // The Wallet endpoints need a real Ryanair session; stub them out here.
+      window.fetch = async () => {
+        throw new Error("wallet endpoints are not mocked");
+      };
+    </script>
+    <script src="../vendor/bwip-js.min.js"></script>
+    <script type="module" src="../popup/popup.js"></script>
+  </body>
+</html>

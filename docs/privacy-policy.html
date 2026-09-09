@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Privacy Policy — QuackPass</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #16181d;
+    --muted: #5b6472;
+    --line: #e3e7ec;
+    --card: #f7f9fb;
+    --accent: #073590;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --fg: #e8eaed;
+      --muted: #a0a8b4;
+      --line: #2a2e35;
+      --card: #1c1f25;
+      --accent: #f1c933;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 48px 20px 80px;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  main { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 40px 0 10px; }
+  .updated { color: var(--muted); font-size: 14px; margin: 0 0 32px; }
+  .lede {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 0 0 8px;
+  }
+  .lede p { margin: 0; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 4px; }
+  code {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.88em;
+  }
+  .table-wrap { overflow-x: auto; margin: 16px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { font-size: 13px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
+  footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <h1>Privacy Policy — QuackPass</h1>
+  <p class="updated">Last updated: 9 September 2026</p>
+
+  <div class="lede">
+    <p><strong>The short version:</strong> QuackPass collects nothing. It has no
+    servers, no accounts and no analytics. Everything happens inside your own
+    browser.</p>
+  </div>
+
+  <h2>What QuackPass does with your data</h2>
+  <p>To show your boarding passes, QuackPass reads the session cookie that the
+  airline's website already set in your browser when you logged in. It sends
+  that cookie to the airline's own servers — the same servers your browser is
+  already talking to — to ask for <strong>your own</strong> bookings and
+  boarding passes.</p>
+  <p>That is the entire data flow. The cookie is used in the request and then
+  forgotten. It is not stored, copied, logged or sent anywhere else.</p>
+
+  <h2>What is stored on your computer</h2>
+  <p>A copy of your most recent result — your flights and boarding passes — is
+  kept in your browser's local extension storage. This exists so the popup still
+  shows your pass if you open it at the airport with no connection.</p>
+  <p>This copy never leaves your computer. You can delete it at any time by
+  removing the extension, or by clearing the extension's data from your browser
+  settings.</p>
+
+  <h2>What is not collected</h2>
+  <p>QuackPass does <strong>not</strong> collect, transmit, sell, share or
+  process:</p>
+  <ul>
+    <li>personal or contact information</li>
+    <li>your boarding passes, bookings or travel history</li>
+    <li>authentication information</li>
+    <li>location</li>
+    <li>browsing history or web activity</li>
+    <li>analytics, telemetry, crash reports or usage statistics</li>
+  </ul>
+  <p>There is nowhere for such data to go. QuackPass has no backend of its own.</p>
+
+  <h2>Who your data is shared with</h2>
+  <p>Nobody. QuackPass contacts exactly one party: the airline's own website, on
+  your behalf, as you. It sends nothing to the developer or to any third party.</p>
+
+  <h2>Files you save</h2>
+  <p>When you save a pass, a ticket image, an A4 PDF or a ZIP, the file is
+  written to your computer by your browser's normal download mechanism. Nothing
+  is uploaded. What you do with those files afterwards is up to you.</p>
+
+  <h2>The button on the airline's website</h2>
+  <p>QuackPass adds one button to the airline's booking page. It reads nothing
+  from that page and sends nothing anywhere. Clicking it only opens the
+  extension's own page.</p>
+
+  <h2>Permissions</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Permission</th><th>Why it is needed</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>cookies</code></td><td>To read your existing session cookie on ryanair.com, so the airline knows the request is yours</td></tr>
+        <tr><td><code>storage</code></td><td>To keep the offline copy described above, on your computer</td></tr>
+        <tr><td><code>downloads</code></td><td>To save the files you ask for</td></tr>
+        <tr><td><code>clipboardWrite</code></td><td>For the "Copy Image" button</td></tr>
+        <tr><td>Access to <code>ryanair.com</code></td><td>The only site QuackPass talks to</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Children</h2>
+  <p>QuackPass is not directed at children and collects no data from anyone.</p>
+
+  <h2>Changes to this policy</h2>
+  <p>If this policy changes, the date at the top changes with it. Because
+  QuackPass is open source, every change is also visible in its version
+  history.</p>
+
+  <h2>Independence</h2>
+  <p>QuackPass is an independent tool. It is not affiliated with, endorsed by,
+  authorised by, or connected to Ryanair or any other airline. All trademarks
+  belong to their owners.</p>
+
+  <h2>Contact</h2>
+  <p>Questions about this policy: <code>&lt;CONTACT_EMAIL&gt;</code></p>
+
+  <footer>QuackPass is free and open source software.</footer>
+
+</main>
+</body>
+</html>

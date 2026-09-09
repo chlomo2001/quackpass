@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "QuackPass — Boarding Passes in Your Browser",
+  "short_name": "QuackPass",
+  "version": "1.0.0",
+  "description": "View, save and print your Ryanair boarding passes in your browser. No phone needed. Runs locally, nothing is uploaded.",
+  "minimum_chrome_version": "103",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "cookies",
+    "downloads",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://*.ryanair.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.ryanair.com/*"],
+      "js": ["content/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Boarding passes",
+    "default_popup": "popup/popup.html"
+  }
+}

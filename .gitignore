@@ -1,0 +1,9 @@
+# Build output
+*.zip
+*.crx
+*.pem
+
+# Local tooling
+node_modules/
+.DS_Store
+Thumbs.db

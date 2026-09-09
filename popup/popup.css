@@ -1,0 +1,198 @@
+:root {
+  --bg: #ffffff;
+  --fg: #16181d;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --accent: #073590;
+  --accent-fg: #ffffff;
+  --card: #f8fafc;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --fg: #e8eaed;
+    --muted: #9aa1ac;
+    --line: #2a2e35;
+    --accent: #f1c933;
+    --accent-fg: #14161a;
+    --card: #1c1f25;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  width: 380px;
+  max-height: 580px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 12px;
+  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* Same UI opened as a full tab from the in-page button. */
+body.tab {
+  width: auto;
+  max-width: 520px;
+  max-height: none;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.app-header { margin-bottom: 10px; }
+.header-title { font-size: 16px; font-weight: 700; }
+.header-tagline { font-size: 11px; color: var(--muted); }
+
+button {
+  font: inherit;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--fg);
+  cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: 0.55; cursor: default; }
+
+.btn-download-all {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.print-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  background: var(--card);
+}
+
+.print-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.print-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.btn-a4 {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.search-input {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+}
+.search-empty { padding: 8px 0; color: var(--muted); }
+
+.pass, .flight-summary {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: var(--card);
+}
+
+.pass-title { font-weight: 600; font-size: 12px; }
+.pass-meta { font-size: 11px; color: var(--muted); }
+.pass-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.pass-actions button { font-size: 11px; }
+.pass-qr:not(:empty) { margin-top: 10px; }
+.pass-qr canvas { display: block; margin: 0 auto; max-width: 100%; }
+
+.pass-warning {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9a6b00;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pass-warning { color: #f1c933; }
+}
+
+/* Shown where the barcode would be, so an empty pass is never a mystery. */
+.pass-notice {
+  border: 1px solid #d9a520;
+  border-radius: 8px;
+  background: #fff8e6;
+  color: #4a3c1d;
+  padding: 14px 14px 12px;
+  text-align: center;
+}
+
+.pass-notice-icon { font-size: 22px; line-height: 1; color: #c8890a; }
+
+.pass-notice-title {
+  margin: 6px 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #7a5600;
+}
+
+.pass-notice p { margin: 0 0 6px; font-size: 12px; line-height: 1.45; }
+.pass-notice p:last-child { margin-bottom: 0; }
+
+.ticket-actions { display: flex; gap: 6px; margin-bottom: 8px; }
+.ticket-detail {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--bg);
+}
+.ticket-route { text-align: center; font-size: 18px; font-weight: 700; }
+.ticket-route-names {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.ticket-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.ticket-section { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.ticket-label { font-size: 10px; text-transform: uppercase; color: var(--muted); }
+.ticket-hint {
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+}
+.ticket-value { font-weight: 600; }
+.aztec-canvas { margin-top: 10px; text-align: center; }
+
+#status {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--muted);
+}

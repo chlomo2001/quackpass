@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mock Ryanair booking page</title>
+    <style>
+      body { margin: 0; font: 15px/1.4 system-ui, sans-serif; background: #f2f4f7; color: #16181d; }
+      .topbar { background: #3c4657; color: #fff; padding: 14px 24px; font-weight: 700; }
+      .wrap { max-width: 840px; margin: 24px auto; }
+      h2 { color: #3c4657; font-size: 20px; }
+      .card { background: #fff; border-radius: 6px; padding: 20px; display: flex; gap: 16px; align-items: center; }
+      .card p { margin: 0; font-size: 13px; color: #555; }
+      .card strong { display: block; color: #3c4657; }
+      .cta { margin-left: auto; }
+      .cta button { background: #3c4657; color: #fff; border: 0; border-radius: 6px; padding: 12px 18px; font: 600 14px system-ui; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">Airline booking page — example</div>
+    <div class="wrap">
+      <h2>Check-in</h2>
+      <div class="card">
+        <div>
+          <strong>Your departure flight digital boarding passes are only accessible in the airline app</strong>
+          <p>This is the only way to access your digital boarding pass, paper boarding passes are no longer issued or accepted.</p>
+        </div>
+        <div class="cta"><button type="button">Access boarding passes</button></div>
+      </div>
+    </div>
+
+    <script>
+      // Stand-in for the extension messaging the content script uses.
+      window.chrome = {
+        runtime: {
+          sendMessage: (msg) => {
+            document.title = "sent: " + msg.type;
+            console.log("sendMessage", msg);
+          },
+        },
+      };
+    </script>
+    <script src="../content/content.js"></script>
+  </body>
+</html>
