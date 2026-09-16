@@ -30,6 +30,11 @@ step, so you can load it unpacked straight away.
 - Shows the **full airport names** under the route codes, and the **Hebrew
   calendar date** under the travel date, in traditional letter numerals
   (e.g. `כ״ט בחשוון תשפ״ז`).
+- When two passes carry the **same barcode** — an infant on an adult's lap gets
+  the adult's barcode — only the real holder's card shows it, read from the
+  name encoded inside the barcode. The holder's card says who else it covers,
+  and the other card points to it, so no card ever shows a barcode that would
+  scan as someone else.
 - When Ryanair returns a pass with **no barcode**, a notice appears in its place,
   on screen and on the printed ticket. It says what is missing, names the
   destination country, and suggests the usual cause (entry documents not yet

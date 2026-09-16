@@ -163,6 +163,26 @@ button:disabled { opacity: 0.55; cursor: default; }
 .pass-notice p { margin: 0 0 6px; font-size: 12px; line-height: 1.45; }
 .pass-notice p:last-child { margin-bottom: 0; }
 
+/* A pass that carries another passenger's barcode — informational, not a fault. */
+.pass-notice.info {
+  border-color: #7d97d6;
+  background: #eef3ff;
+  color: #1d2b4a;
+}
+.pass-notice.info .pass-notice-icon,
+.pass-notice.info .pass-notice-title { color: #073590; }
+
+.pass-shared {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #073590;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pass-shared { color: #9db8ff; }
+}
+
 .ticket-actions { display: flex; gap: 6px; margin-bottom: 8px; }
 .ticket-detail {
   border: 1px solid var(--line);

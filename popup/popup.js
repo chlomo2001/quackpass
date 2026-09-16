@@ -3,6 +3,7 @@ import { buildZip } from "../lib/zip.js";
 import { buildPdf, encodePdfPage } from "../lib/pdf.js";
 import { airportName, destinationCountry } from "../lib/airports.js";
 import { hebrewDate } from "../lib/hebrew.js";
+import { isInfant } from "../lib/ryanair.js";
 import { CACHE_TTL_MS, GOOGLE_WALLET_SAVE_URL } from "../lib/config.js";
 
 const statusEl = document.getElementById("status");
@@ -132,14 +133,96 @@ const hasBarcode = (pass) => typeof pass.barcode === "string" && pass.barcode.tr
 
 const NOTICE_TITLE = "No barcode on this pass";
 
-function noticeLines(pass) {
-  return [
-    "Ryanair returned this boarding pass without a scannable barcode.",
-    `This can happen when entry documents for ${destinationCountry(pass)} have ` +
-      `not yet been checked or linked to the booking.`,
-    "Please check your booking with Ryanair, and carry the documents that prove " +
-      "your right of entry.",
-  ];
+function missingBarcodeNotice(pass) {
+  return {
+    tone: "warning",
+    icon: "⚠",
+    title: NOTICE_TITLE,
+    lines: [
+      "Ryanair returned this boarding pass without a scannable barcode.",
+      `This can happen when entry documents for ${destinationCountry(pass)} have ` +
+        `not yet been checked or linked to the booking.`,
+      "Please check your booking with Ryanair, and carry the documents that prove " +
+        "your right of entry.",
+    ],
+  };
+}
+
+// ---------------------------------------------------------- shared barcodes
+
+// Ryanair can return the same barcode on two passes — an infant travelling on
+// an adult's lap gets the adult's barcode, with the adult's name inside it.
+// Printing it again under the infant's name would scan as the adult at the
+// gate, so only the real holder's card shows it.
+
+const onlyLetters = (s) => String(s ?? "").toUpperCase().replace(/[^A-Z]/g, "");
+
+// IATA boarding pass data carries "LAST/FIRST" in characters 3 to 22.
+function barcodeHolder(pass) {
+  const code = pass.barcode;
+  if (typeof code !== "string" || code[0] !== "M" || code.length < 22) return null;
+  const [last = "", first = ""] = code.slice(2, 22).trim().split("/");
+  return { last: onlyLetters(last), first: onlyLetters(first) };
+}
+
+// The name field is cut at 20 characters and can carry a title, so compare prefixes.
+const samePrefix = (a, b) => Boolean(a && b) && (a.startsWith(b) || b.startsWith(a));
+
+function holdsOwnBarcode(pass) {
+  const holder = barcodeHolder(pass);
+  if (!holder) return false;
+  return (
+    samePrefix(holder.last, onlyLetters(pass.name?.last)) &&
+    (!holder.first || samePrefix(holder.first, onlyLetters(pass.name?.first)))
+  );
+}
+
+let barcodeOwner = new Map(); // pass -> the pass whose barcode it carries
+let sharersOf = new Map(); // owner pass -> passes that carry its barcode
+
+function indexSharedBarcodes(passes) {
+  barcodeOwner = new Map();
+  sharersOf = new Map();
+
+  const byCode = new Map();
+  for (const pass of passes) {
+    if (!hasBarcode(pass)) continue;
+    if (!byCode.has(pass.barcode)) byCode.set(pass.barcode, []);
+    byCode.get(pass.barcode).push(pass);
+  }
+
+  for (const group of byCode.values()) {
+    if (group.length < 2) continue;
+
+    const owner =
+      group.find(holdsOwnBarcode) ?? group.find((p) => !isInfant(p.paxType)) ?? group[0];
+
+    for (const pass of group) {
+      if (pass === owner) continue;
+      barcodeOwner.set(pass, owner);
+      if (!sharersOf.has(owner)) sharersOf.set(owner, []);
+      sharersOf.get(owner).push(pass);
+    }
+  }
+}
+
+const fullName = (pass) => `${pass.name.first} ${pass.name.last}`;
+
+const alsoCovers = (pass) => {
+  const sharers = sharersOf.get(pass);
+  return sharers ? `Also covers ${sharers.map(fullName).join(", ")}` : null;
+};
+
+function sharedBarcodeNotice(pass, owner) {
+  return {
+    tone: "info",
+    icon: "👶",
+    title: "On another passenger's pass",
+    lines: [
+      `Ryanair issued one barcode for ${fullName(owner)} and ${fullName(pass)} on this flight.`,
+      `At the gate, use ${fullName(owner)}'s boarding pass.`,
+    ],
+  };
 }
 
 // ------------------------------------------------------------- ticket canvas
@@ -188,6 +271,14 @@ function drawTicketCard(ctx, pass, x, y, width) {
 
   field("Passenger", `${pass.name.first} ${pass.name.last}`, 40, 114);
   field("Booking ref", pass.pnr, CARD_W - 40, 114, "right");
+
+  const covers = alsoCovers(pass);
+  if (covers) {
+    ctx.textAlign = "left";
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillStyle = "#073590";
+    ctx.fillText(covers, 40, 155);
+  }
   field("Flight", `${pass.flight.carrierCode} ${pass.flight.number}`, 40, 172);
   field("Date", formatDate(pass.departure.date), CARD_W - 40, 172, "right");
 
@@ -229,7 +320,11 @@ function drawTicketCard(ctx, pass, x, y, width) {
     ctx.fillText("PRIORITY BOARDING ⚡", CARD_W - 40, 352);
   }
 
-  if (hasBarcode(pass)) {
+  const owner = barcodeOwner.get(pass);
+
+  if (owner) {
+    drawNotice(ctx, sharedBarcodeNotice(pass, owner));
+  } else if (hasBarcode(pass)) {
     try {
       const aztec = document.createElement("canvas");
       drawAztec(aztec, pass.barcode, 8); // oversampled so it stays sharp when printed
@@ -239,7 +334,7 @@ function drawTicketCard(ctx, pass, x, y, width) {
       console.error("Failed to draw Aztec code", error);
     }
   } else {
-    drawNotice(ctx, pass);
+    drawNotice(ctx, missingBarcodeNotice(pass));
   }
 
   if (gate) {
@@ -276,18 +371,24 @@ function wrapText(ctx, text, maxWidth) {
   return lines;
 }
 
+const NOTICE_COLOURS = {
+  warning: { fill: "#fff8e6", stroke: "#c8890a", icon: "#c8890a", title: "#6b4a00", text: "#3d3222" },
+  info: { fill: "#eef3ff", stroke: "#073590", icon: "#073590", title: "#073590", text: "#1d2b4a" },
+};
+
 // Printed where the barcode would have been, so the gap is never a mystery.
-function drawNotice(ctx, pass) {
+function drawNotice(ctx, notice) {
   const left = 30;
   const top = 368;
   const boxW = CARD_W - left * 2;
   const boxH = 258;
   const pad = 18;
+  const colours = NOTICE_COLOURS[notice.tone];
 
   ctx.save();
 
-  ctx.fillStyle = "#fff8e6";
-  ctx.strokeStyle = "#c8890a";
+  ctx.fillStyle = colours.fill;
+  ctx.strokeStyle = colours.stroke;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.roundRect(left, top, boxW, boxH, 10);
@@ -297,18 +398,18 @@ function drawNotice(ctx, pass) {
   ctx.textAlign = "center";
 
   ctx.font = "26px sans-serif";
-  ctx.fillStyle = "#c8890a";
-  ctx.fillText("⚠", CARD_W / 2, top + pad + 22);
+  ctx.fillStyle = colours.icon;
+  ctx.fillText(notice.icon, CARD_W / 2, top + pad + 22);
 
   ctx.font = "bold 19px sans-serif";
-  ctx.fillStyle = "#6b4a00";
-  ctx.fillText(NOTICE_TITLE.toUpperCase(), CARD_W / 2, top + pad + 58);
+  ctx.fillStyle = colours.title;
+  ctx.fillText(notice.title.toUpperCase(), CARD_W / 2, top + pad + 58);
 
   ctx.font = "15px sans-serif";
-  ctx.fillStyle = "#3d3222";
+  ctx.fillStyle = colours.text;
 
   let y = top + pad + 92;
-  for (const paragraph of noticeLines(pass)) {
+  for (const paragraph of notice.lines) {
     for (const line of wrapText(ctx, paragraph, boxW - pad * 2)) {
       ctx.fillText(line, CARD_W / 2, y);
       y += 21;
@@ -483,7 +584,7 @@ function ticketRows(pass) {
 
   const rows = [
     [
-      { label: "Passenger", value: `${pass.name.first} ${pass.name.last}` },
+      { label: "Passenger", value: `${pass.name.first} ${pass.name.last}`, sub: alsoCovers(pass) },
       { label: "Booking ref", value: pass.pnr },
     ],
     [
@@ -584,32 +685,35 @@ function renderTicketDetails(container, pass) {
   });
 
   const slot = container.querySelector(".aztec-canvas");
+  const owner = barcodeOwner.get(pass);
 
-  if (hasBarcode(pass)) {
+  if (owner) {
+    slot.appendChild(buildNoticeElement(sharedBarcodeNotice(pass, owner)));
+  } else if (hasBarcode(pass)) {
     const canvas = document.createElement("canvas");
     drawAztec(canvas, pass.barcode, 3);
     slot.appendChild(canvas);
   } else {
-    slot.appendChild(buildNoticeElement(pass));
+    slot.appendChild(buildNoticeElement(missingBarcodeNotice(pass)));
   }
 }
 
 // The same message the printed card carries, shown where the barcode would be.
-function buildNoticeElement(pass) {
+function buildNoticeElement(notice) {
   const box = document.createElement("div");
-  box.className = "pass-notice";
+  box.className = `pass-notice ${notice.tone}`;
 
   const icon = document.createElement("div");
   icon.className = "pass-notice-icon";
-  icon.textContent = "⚠";
+  icon.textContent = notice.icon;
 
   const title = document.createElement("div");
   title.className = "pass-notice-title";
-  title.textContent = NOTICE_TITLE;
+  title.textContent = notice.title;
 
   box.append(icon, title);
 
-  for (const paragraph of noticeLines(pass)) {
+  for (const paragraph of notice.lines) {
     const line = document.createElement("p");
     line.textContent = paragraph;
     box.appendChild(line);
@@ -755,7 +859,12 @@ function renderPasses(passes, payloads) {
       `${formatDate(pass.departure.date)} · Seat ${pass.seat.designator}`;
 
     let warning = null;
-    if (!hasBarcode(pass)) {
+    const owner = barcodeOwner.get(pass);
+    if (owner) {
+      warning = document.createElement("div");
+      warning.className = "pass-shared";
+      warning.textContent = `👶 Uses ${fullName(owner)}'s barcode`;
+    } else if (!hasBarcode(pass)) {
       warning = document.createElement("div");
       warning.className = "pass-warning";
       warning.textContent = `⚠ ${NOTICE_TITLE}`;
@@ -989,6 +1098,7 @@ function renderSearchBar(passes) {
 
 function renderAll({ passes, downloadPayloads, flights }) {
   indexArrivals(flights);
+  indexSharedBarcodes(passes);
 
   passesEl.innerHTML = "";
   bulkActionsEl.innerHTML = "";

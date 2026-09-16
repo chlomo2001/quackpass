@@ -37,6 +37,26 @@
         seat: { designator: seat },
       });
 
+      // An adult with an infant on their lap: Ryanair returns the adult's barcode
+      // (adult's name inside) on both passes, same seat and sequence.
+      const lapBarcode =
+        "M1" + "TAYLOR/SAM".padEnd(20) + "ET3STAB STNDUBFR 0123 286Y014A0020 100";
+      const lapPair = [
+        {
+          ...makePass(8, "Sam", "Taylor", "14A"),
+          pnr: "T3STAB",
+          sequence: 20,
+          barcode: lapBarcode,
+        },
+        {
+          ...makePass(8, "Leo", "Taylor", "14A"),
+          pnr: "T3STAB",
+          sequence: 20,
+          paxType: "INF",
+          barcode: lapBarcode,
+        },
+      ];
+
       const passes = [
         makePass(1, "Anna", "Kowalska", "12A"),
         makePass(2, "Piotr", "Nowak", "12B"),
@@ -44,6 +64,7 @@
         makePass(4, "John", "Byrne", "12D"),
         makePass(5, "Ewa", "Zielinska", "12E"),
         makePass(6, "Tom", "O Connor", "12F"),
+        ...lapPair,
         // Real-world case: Ryanair issues the pass with no barcode when the
         // passenger's entry documents are not cleared for the destination.
         {
