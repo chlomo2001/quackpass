@@ -43,7 +43,10 @@ step, so you can load it unpacked straight away.
   behind them.
 - Adds a **"No Smartphone? Click Here!" button on ryanair.com itself**, right
   under Ryanair's own "Access boarding passes", which opens your passes in a
-  new tab.
+  new tab. When Ryanair does not show that button — a booking where only some
+  passengers are checked in, for example — a small floating button appears in
+  the corner instead, so the checked-in passengers' passes stay reachable. It
+  can be hidden with × for the rest of the visit.
 - Lists **upcoming flights** that are not checked in yet, with check-in status.
 - Caches the last result, so the popup still shows something offline.
 
@@ -89,6 +92,7 @@ content/content.js   injects the button on ryanair.com pages
 vendor/bwip-js.min.js  Aztec barcode renderer (MIT)
 dev/mock.html        run the popup as a normal page with fake data
 dev/mock-site.html   fake booking page for testing the injected button
+dev/mock-site-partial.html  same, partly checked in (no Ryanair button)
 dev/shots.html       renders the 1280x800 store screenshots
 store/               store listing copy, privacy policy draft, screenshots
 docs/                GitHub Pages site: landing page + hosted privacy policy

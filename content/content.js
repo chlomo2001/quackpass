@@ -1,8 +1,17 @@
-// Injects a QuackPass button next to Ryanair's "Access boarding passes" button.
-// The site is a single-page app, so we keep watching for the anchor to reappear.
+// Puts a QuackPass button on Ryanair's booking pages.
+//
+// Preferred spot: right under Ryanair's own "Access boarding passes" button.
+// Ryanair does not render that button in every state — a booking where only
+// some passengers are checked in shows something else — so when it is missing,
+// a small floating button appears in the corner instead. The checked-in
+// passengers' passes exist either way, and must stay reachable.
+//
+// The site is a single-page app, so we keep watching for changes.
 
 const BUTTON_ID = "quackpass-inline-button";
+const FLOAT_ID = "quackpass-float";
 const STYLE_ID = "quackpass-inline-style";
+const HIDE_KEY = "quackpass-hide-float";
 
 // Ryanair localises the label, so match on a phrase from each language.
 const ANCHOR_PHRASES = [
@@ -40,6 +49,34 @@ function injectStyle() {
     }
     #${BUTTON_ID}:hover { background: #ffd94a; }
     #${BUTTON_ID}:active { transform: translateY(1px); }
+
+    #${FLOAT_ID} {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 2147483000;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 4px 4px 0;
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    }
+    #${FLOAT_ID} #${BUTTON_ID} { margin: 0; }
+    #${FLOAT_ID} .quackpass-dismiss {
+      order: -1;
+      width: 24px;
+      height: 24px;
+      margin-left: 4px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #666;
+      font: 16px/1 system-ui, sans-serif;
+      cursor: pointer;
+    }
+    #${FLOAT_ID} .quackpass-dismiss:hover { background: #eee; color: #000; }
   `;
   (document.head || document.documentElement).appendChild(style);
 }
@@ -61,10 +98,27 @@ function findAnchor() {
   return null;
 }
 
-function buildButton() {
+// A page that talks about boarding passes is one where the button belongs,
+// even when Ryanair's own button is not on it. The script only runs on
+// ryanair.com, so this never fires anywhere else.
+function pageMentionsPasses() {
+  const text = normalize(document.body?.innerText || "");
+  return ANCHOR_PHRASES.some((phrase) => text.includes(phrase));
+}
+
+function floatDismissed() {
+  try {
+    return sessionStorage.getItem(HIDE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function buildButton(placement) {
   const button = document.createElement("button");
   button.id = BUTTON_ID;
   button.type = "button";
+  button.dataset.placement = placement;
   button.textContent = "🦆 No Smartphone? Click Here!";
   button.title = "Open your boarding passes with QuackPass";
 
@@ -77,19 +131,52 @@ function buildButton() {
   return button;
 }
 
-function place() {
-  if (document.getElementById(BUTTON_ID)) return;
-
-  const anchor = findAnchor();
-  if (!anchor) return;
-
-  injectStyle();
-
+function placeInline(anchor) {
   // Sit under Ryanair's own button, inside the same block, so the layout holds.
   const host = anchor.parentElement || anchor;
   const wrapper = document.createElement("div");
-  wrapper.appendChild(buildButton());
+  wrapper.appendChild(buildButton("inline"));
   host.insertBefore(wrapper, anchor.nextSibling);
+}
+
+function placeFloating() {
+  const holder = document.createElement("div");
+  holder.id = FLOAT_ID;
+
+  const dismiss = document.createElement("button");
+  dismiss.type = "button";
+  dismiss.className = "quackpass-dismiss";
+  dismiss.textContent = "×";
+  dismiss.title = "Hide for this visit";
+  dismiss.addEventListener("click", () => {
+    try {
+      sessionStorage.setItem(HIDE_KEY, "1");
+    } catch {}
+    holder.remove();
+  });
+
+  holder.append(buildButton("floating"), dismiss);
+  document.body.appendChild(holder);
+}
+
+function place() {
+  const existing = document.getElementById(BUTTON_ID);
+  const anchor = findAnchor();
+
+  if (anchor) {
+    if (existing?.dataset.placement === "inline") return;
+    // Ryanair's button has appeared: swap the floating one for the inline one.
+    document.getElementById(FLOAT_ID)?.remove();
+    injectStyle();
+    placeInline(anchor);
+    return;
+  }
+
+  if (existing) return;
+  if (floatDismissed() || !document.body || !pageMentionsPasses()) return;
+
+  injectStyle();
+  placeFloating();
 }
 
 let scheduled = false;

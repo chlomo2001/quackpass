@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mock booking page — partly checked in</title>
+    <style>
+      body { margin: 0; font: 15px/1.4 system-ui, sans-serif; background: #f2f4f7; color: #16181d; min-height: 900px; }
+      .topbar { background: #3c4657; color: #fff; padding: 14px 24px; font-weight: 700; }
+      .wrap { max-width: 840px; margin: 24px auto; }
+      h2 { color: #3c4657; font-size: 20px; }
+      .card { background: #fff; border-radius: 6px; padding: 20px; margin-bottom: 16px; }
+      .card p { margin: 0; font-size: 13px; color: #555; }
+      .card strong { display: block; color: #3c4657; margin-bottom: 6px; }
+      .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid #eee; }
+      .ok { color: #1a7f37; font-weight: 600; }
+      .todo { color: #9a6b00; font-weight: 600; }
+      .cta button { background: #3c4657; color: #fff; border: 0; border-radius: 6px; padding: 12px 18px; font: 600 14px system-ui; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">Airline booking page — example (partly checked in)</div>
+    <div class="wrap">
+      <h2>Check-in</h2>
+
+      <!-- No "Access boarding passes" button in this state. Only some passengers
+           are checked in; the page still mentions boarding passes. -->
+      <div class="card">
+        <strong>2 of 4 passengers are checked in</strong>
+        <p>Checked-in passengers can show their digital boarding pass in the airline app. Finish check-in for the others to get their boarding passes.</p>
+        <div class="row"><span>Anna Kowalska</span><span class="ok">Checked in</span></div>
+        <div class="row"><span>Piotr Nowak</span><span class="ok">Checked in</span></div>
+        <div class="row"><span>Maria Silva</span><span class="todo">Not checked in</span></div>
+        <div class="row"><span>John Byrne</span><span class="todo">Not checked in</span></div>
+        <div class="cta" style="margin-top:12px"><button type="button">Continue check-in</button></div>
+      </div>
+    </div>
+
+    <script>
+      // Stand-in for the extension messaging the content script uses.
+      window.chrome = {
+        runtime: {
+          sendMessage: (msg) => {
+            document.title = "sent: " + msg.type;
+            console.log("sendMessage", msg);
+          },
+        },
+      };
+    </script>
+    <script src="../content/content.js"></script>
+  </body>
+</html>
