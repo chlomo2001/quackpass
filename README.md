@@ -47,6 +47,8 @@ step, so you can load it unpacked straight away.
   passengers are checked in, for example — a small floating button appears in
   the corner instead, so the checked-in passengers' passes stay reachable. It
   can be hidden with × for the rest of the visit.
+- Shows **Fast Track** and **Priority Boarding** on the ticket when the
+  passenger has them, on screen and on the printed card.
 - Lists **upcoming flights** that are not checked in yet, with check-in status.
 - Caches the last result, so the popup still shows something offline.
 

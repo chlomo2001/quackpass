@@ -58,8 +58,9 @@
       ];
 
       const passes = [
-        makePass(1, "Anna", "Kowalska", "12A"),
-        makePass(2, "Piotr", "Nowak", "12B"),
+        // Fast Track in the two shapes Ryanair might use: a flag, or an extras code.
+        { ...makePass(1, "Anna", "Kowalska", "12A"), fastTrack: true },
+        { ...makePass(2, "Piotr", "Nowak", "12B"), ssrs: [{ code: "FAST", name: "Fast Track" }] },
         makePass(3, "Maria", "Silva", "12C"),
         makePass(4, "John", "Byrne", "12D"),
         makePass(5, "Ewa", "Zielinska", "12E"),

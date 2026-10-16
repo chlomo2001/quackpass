@@ -125,6 +125,31 @@ function terminalOf(pass) {
   return /terminal/i.test(text) ? text : `Terminal ${text}`;
 }
 
+// Ryanair's Fast Track add-on. The API field is not documented, so accept the
+// likely shapes: a boolean flag, or the add-on's name or code ("FAST"/"FTRK")
+// inside any extras list. The barcode is skipped — it is fixed-format data,
+// not a feature list — and a bare "fast" is never enough: "Belfast" has one.
+function hasFastTrack(pass) {
+  if (pass.fastTrack === true || pass.isFastTrack === true || pass.fasttrack === true) {
+    return true;
+  }
+  if (pass.fastTrack === false || pass.isFastTrack === false) return false;
+
+  // Only string values count — never key names, or "fastTrack": false would match.
+  const values = [];
+  const walk = (value, key) => {
+    if (key === "barcode") return;
+    if (typeof value === "string") values.push(value.trim());
+    else if (Array.isArray(value)) value.forEach((item) => walk(item, key));
+    else if (value && typeof value === "object") {
+      for (const [k, item] of Object.entries(value)) walk(item, k);
+    }
+  };
+  walk(pass, "");
+
+  return values.some((text) => /fast[\s_-]*track/i.test(text) || /^(FAST|FTRK)$/.test(text));
+}
+
 // ---------------------------------------------------------- missing barcode
 
 // Ryanair sometimes returns a pass with no barcode. The API never says why, so
@@ -313,11 +338,14 @@ function drawTicketCard(ctx, pass, x, y, width) {
     ctx.fillText(terminal, 40, 352);
   }
 
-  if (pass.priority) {
+  const badges = [];
+  if (hasFastTrack(pass)) badges.push("FAST TRACK 🚀");
+  if (pass.priority) badges.push("PRIORITY BOARDING ⚡");
+  if (badges.length) {
     ctx.textAlign = "right";
     ctx.font = "bold 14px sans-serif";
     ctx.fillStyle = "#073590";
-    ctx.fillText("PRIORITY BOARDING ⚡", CARD_W - 40, 352);
+    ctx.fillText(badges.join("  ·  "), CARD_W - 40, 352);
   }
 
   const owner = barcodeOwner.get(pass);
@@ -606,6 +634,7 @@ function ticketRows(pass) {
   if (departs) times.push({ label: "Departs", value: formatTime(departs) });
   if (arrives) times.push({ label: "Arrives", value: formatTime(arrives) });
   if (terminal) times.push({ label: "Terminal", value: terminal });
+  if (hasFastTrack(pass)) times.push({ label: "Fast Track", value: "YES 🚀" });
   times.push(priority);
 
   for (let i = 0; i < times.length; i += 2) {
