@@ -2,7 +2,9 @@ import { fetchBoardingPasses, fetchOrders } from "./lib/api.js";
 import {
   buildDownloadPayload,
   decodeCustomerId,
+  extractExtrasFromOrders,
   extractFlightsFromOrders,
+  extrasForPass,
   filterReadyBookings,
 } from "./lib/ryanair.js";
 
@@ -28,6 +30,10 @@ async function loadEverything() {
   let passes = [];
   if (bookingIds.length > 0) {
     passes = await fetchBoardingPasses({ customerId, bookingIds, xAuthToken: token });
+
+    // Bags, Fast Track and the like are only in the bookings response.
+    const extras = extractExtrasFromOrders(orders);
+    for (const pass of passes) pass.extras = extrasForPass(pass, flights, extras);
   }
 
   const result = { flights, passes, downloadPayloads: passes.map(buildDownloadPayload) };

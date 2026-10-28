@@ -61,9 +61,10 @@
         // Fast Track in the two shapes Ryanair might use: a flag, or an extras code.
         { ...makePass(1, "Anna", "Kowalska", "12A"), fastTrack: true },
         { ...makePass(2, "Piotr", "Nowak", "12B"), ssrs: [{ code: "FAST", name: "Fast Track" }] },
-        makePass(3, "Maria", "Silva", "12C"),
-        makePass(4, "John", "Byrne", "12D"),
-        makePass(5, "Ewa", "Zielinska", "12E"),
+        // Checked bags in the shapes Ryanair might use. Cabin bags must not count.
+        { ...makePass(3, "Maria", "Silva", "12C"), bags: [{ code: "BAG", weight: 20 }, { code: "CBAG", name: "Cabin bag" }] },
+        { ...makePass(4, "John", "Byrne", "12D"), ssrs: [{ code: "B20K", name: "20kg Check-in Bag", quantity: 2 }] },
+        { ...makePass(5, "Ewa", "Zielinska", "12E"), checkedBags: 1 },
         makePass(6, "Tom", "O Connor", "12F"),
         ...lapPair,
         // Real-world case: Ryanair issues the pass with no barcode when the

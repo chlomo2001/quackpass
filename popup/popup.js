@@ -150,6 +150,69 @@ function hasFastTrack(pass) {
   return values.some((text) => /fast[\s_-]*track/i.test(text) || /^(FAST|FTRK)$/.test(text));
 }
 
+// Checked (hold) bags. The API field is not documented, so accept the likely
+// shapes: a plain count, or bag items in any extras list with a code such as
+// "BAG" / "B20K" or a name such as "20kg Check-in Bag". Cabin and priority
+// bags are not hold luggage and are skipped. Returns "2 × 20 kg", "1 bag", or
+// null when there is nothing to show.
+const CABIN_BAG = /cabin|hand\s*bag|carry|CBAG|priority/i;
+// Ryanair SSR codes for hold bags start with BAG (BAG, BAG20…) or look like B20K.
+const BAG_CODE = /^(BAG\d*|B\d{2}K?)$/i;
+const BAG_WORDS = /check(ed|-?in)?\s*(in\s*)?bag|hold\s*bag|luggage|baggage/i;
+
+function checkedBagsLabel(pass) {
+  const format = (count, weights) => {
+    if (count <= 0) return null;
+    const same = weights.length === count && weights.every((w) => w === weights[0]);
+    if (same) return `${count} × ${weights[0]} kg`;
+    return `${count} bag${count === 1 ? "" : "s"}`;
+  };
+
+  for (const key of ["checkedBags", "checkedInBags", "holdBags", "bags", "baggage", "numberOfBags", "bagCount"]) {
+    if (typeof pass[key] === "number") return format(pass[key], []);
+  }
+
+  let count = 0;
+  const weights = [];
+
+  const weightOf = (text, item) => {
+    if (item && typeof item.weight === "number") return item.weight;
+    const match = /(\d{2})\s*kg/i.exec(text) ?? /\bB(\d{2})K\b/i.exec(text);
+    return match ? Number(match[1]) : null;
+  };
+
+  const consider = (text, item) => {
+    const flat = text.replace(/\s+/g, " ").trim();
+    if (!flat || CABIN_BAG.test(flat)) return;
+    const words = flat.split(" ");
+    if (!(words.some((w) => BAG_CODE.test(w)) || BAG_WORDS.test(flat))) return;
+    const qty = item && typeof item.quantity === "number" ? item.quantity
+      : item && typeof item.count === "number" ? item.count : 1;
+    const weight = weightOf(flat, item);
+    count += qty;
+    for (let i = 0; i < qty; i++) if (weight) weights.push(weight);
+  };
+
+  const walk = (value, key) => {
+    if (key === "barcode") return;
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (typeof item === "string") consider(item, null);
+        else if (item && typeof item === "object") {
+          const text = Object.values(item).filter((v) => typeof v === "string").join(" ");
+          consider(text, item);
+          for (const [k, v] of Object.entries(item)) if (Array.isArray(v)) walk(v, k);
+        }
+      }
+    } else if (value && typeof value === "object") {
+      for (const [k, v] of Object.entries(value)) walk(v, k);
+    }
+  };
+  walk(pass, "");
+
+  return format(count, weights);
+}
+
 // ---------------------------------------------------------- missing barcode
 
 // Ryanair sometimes returns a pass with no barcode. The API never says why, so
@@ -320,6 +383,8 @@ function drawTicketCard(ctx, pass, x, y, width) {
   }
 
   field("Seat", pass.seat.designator, 40, 244);
+  const bags = checkedBagsLabel(pass);
+  if (bags) field("Bags", bags, CARD_W / 2, 244, "center");
   field("Seq", String(pass.sequence), CARD_W - 40, 244, "right");
 
   const gate = gateCloseTime(pass);
@@ -634,6 +699,8 @@ function ticketRows(pass) {
   if (departs) times.push({ label: "Departs", value: formatTime(departs) });
   if (arrives) times.push({ label: "Arrives", value: formatTime(arrives) });
   if (terminal) times.push({ label: "Terminal", value: terminal });
+  const bags = checkedBagsLabel(pass);
+  if (bags) times.push({ label: "Checked bags", value: bags });
   if (hasFastTrack(pass)) times.push({ label: "Fast Track", value: "YES 🚀" });
   times.push(priority);
 

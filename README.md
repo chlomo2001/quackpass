@@ -49,6 +49,10 @@ step, so you can load it unpacked straight away.
   can be hidden with × for the rest of the visit.
 - Shows **Fast Track** and **Priority Boarding** on the ticket when the
   passenger has them, on screen and on the printed card.
+- Shows **checked bags** (e.g. `2 × 20 kg`) on the ticket when the passenger
+  has them. Cabin bags are not counted. Bags and Fast Track are not in the
+  boarding-pass response; they come from the bookings response as per-passenger
+  "SSR" extras, matched to each pass by booking, leg and passenger name.
 - Lists **upcoming flights** that are not checked in yet, with check-in status.
 - Caches the last result, so the popup still shows something offline.
 
