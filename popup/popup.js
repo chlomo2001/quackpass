@@ -156,9 +156,11 @@ function hasFastTrack(pass) {
 // priority bags are not hold luggage and are skipped. Returns "2 × 20 kg", "1 bag", or
 // null when there is nothing to show.
 const CABIN_BAG = /cabin|hand\s*bag|carry|CBAG|priority/i;
-// Ryanair's bookings API uses "BBG" for a check-in bag (seen on real
-// bookings); BAG, BAG20 and B20K are accepted in case other shapes turn up.
-const BAG_CODE = /^(BBG|BAG\d*|B\d{2}K?)$/i;
+// Ryanair SSR codes for check-in bags (Travelport's Ryanair notes): BBG is the
+// paid 20 kg bag, BBBG the 20 kg bag included with a Plus fare, CBAG the 10 kg
+// check-in bag. BAG, BAG20 and B20K are accepted in case other shapes turn up.
+const BAG_CODE = /^(BBG|BBBG|CBAG|BAG\d*|B\d{2}K?)$/i;
+const BAG_WEIGHT_KG = { BBG: 20, BBBG: 20, CBAG: 10 };
 const BAG_WORDS = /check(ed|-?in)?\s*(in\s*)?bag|hold\s*bag|luggage|baggage/i;
 
 function checkedBagsLabel(pass) {
@@ -166,6 +168,8 @@ function checkedBagsLabel(pass) {
     if (count <= 0) return null;
     const same = weights.length === count && weights.every((w) => w === weights[0]);
     if (same) return `${count} × ${weights[0]} kg`;
+    // Mixed weights, e.g. one 20 kg and one 10 kg bag.
+    if (weights.length === count) return weights.map((w) => `${w} kg`).join(" + ");
     return `${count} bag${count === 1 ? "" : "s"}`;
   };
 
@@ -178,7 +182,9 @@ function checkedBagsLabel(pass) {
   // an entry can repeat its own code per segment, which double-counted before.
   if (Array.isArray(pass.extras)) {
     const bags = pass.extras.filter((s) => s && BAG_CODE.test(String(s.code ?? "")));
-    const weights = bags.map((s) => (typeof s.weight === "number" ? s.weight : null)).filter(Boolean);
+    const weights = bags
+      .map((s) => (typeof s.weight === "number" ? s.weight : BAG_WEIGHT_KG[String(s.code).toUpperCase()]))
+      .filter(Boolean);
     return format(bags.length, weights);
   }
 
