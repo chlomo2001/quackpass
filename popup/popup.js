@@ -1042,6 +1042,10 @@ function renderPasses(passes, payloads) {
 }
 
 function checkinLabel(flight) {
+  if (flight.checkinStatus === "partial") {
+    return `${flight.checkedInCount} of ${flight.passengerCount} passengers checked in`;
+  }
+  if (flight.checkinStatus === "documentsadded") return "Documents added, not checked in yet";
   if (flight.checkinStatus !== "nocheckin") return flight.checkinStatus;
 
   const now = Date.now();
@@ -1223,7 +1227,9 @@ function renderAll({ passes, downloadPayloads, flights }) {
     renderSearchBar(passes);
   }
 
-  const upcoming = flights.filter((f) => !f.isReady);
+  // Legs still waiting on at least one passenger stay listed, so a partly
+  // checked-in group booking is not mistaken for a finished one.
+  const upcoming = flights.filter((f) => !f.isReady || f.checkinStatus === "partial");
   if (upcoming.length > 0) renderFlights(upcoming);
 
   return { passCount: passes.length, upcomingCount: upcoming.length };
