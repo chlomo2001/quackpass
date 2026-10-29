@@ -62,7 +62,7 @@
         { ...makePass(1, "Anna", "Kowalska", "12A"), fastTrack: true },
         { ...makePass(2, "Piotr", "Nowak", "12B"), ssrs: [{ code: "FAST", name: "Fast Track" }] },
         // Checked bags in the shapes Ryanair might use. Cabin bags must not count.
-        { ...makePass(3, "Maria", "Silva", "12C"), bags: [{ code: "BAG", weight: 20 }, { code: "CBAG", name: "Cabin bag" }] },
+        { ...makePass(3, "Maria", "Silva", "12C"), extras: [{ code: "BBG" }, { code: "CBAG" }, { code: "PSIT" }] },
         { ...makePass(4, "John", "Byrne", "12D"), ssrs: [{ code: "B20K", name: "20kg Check-in Bag", quantity: 2 }] },
         { ...makePass(5, "Ewa", "Zielinska", "12E"), checkedBags: 1 },
         makePass(6, "Tom", "O Connor", "12F"),

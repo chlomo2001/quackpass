@@ -152,12 +152,13 @@ function hasFastTrack(pass) {
 
 // Checked (hold) bags. The API field is not documented, so accept the likely
 // shapes: a plain count, or bag items in any extras list with a code such as
-// "BAG" / "B20K" or a name such as "20kg Check-in Bag". Cabin and priority
-// bags are not hold luggage and are skipped. Returns "2 × 20 kg", "1 bag", or
+// "BBG" / "BAG" / "B20K" or a name such as "20kg Check-in Bag". Cabin and
+// priority bags are not hold luggage and are skipped. Returns "2 × 20 kg", "1 bag", or
 // null when there is nothing to show.
 const CABIN_BAG = /cabin|hand\s*bag|carry|CBAG|priority/i;
-// Ryanair SSR codes for hold bags start with BAG (BAG, BAG20…) or look like B20K.
-const BAG_CODE = /^(BAG\d*|B\d{2}K?)$/i;
+// Ryanair's bookings API uses "BBG" for a check-in bag (seen on real
+// bookings); BAG, BAG20 and B20K are accepted in case other shapes turn up.
+const BAG_CODE = /^(BBG|BAG\d*|B\d{2}K?)$/i;
 const BAG_WORDS = /check(ed|-?in)?\s*(in\s*)?bag|hold\s*bag|luggage|baggage/i;
 
 function checkedBagsLabel(pass) {
