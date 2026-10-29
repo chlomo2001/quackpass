@@ -173,6 +173,15 @@ function checkedBagsLabel(pass) {
     if (typeof pass[key] === "number") return format(pass[key], []);
   }
 
+  // Extras copied from the bookings response (see lib/ryanair.js). Ryanair
+  // lists one SSR entry per bag, so count entries and nothing inside them:
+  // an entry can repeat its own code per segment, which double-counted before.
+  if (Array.isArray(pass.extras)) {
+    const bags = pass.extras.filter((s) => s && BAG_CODE.test(String(s.code ?? "")));
+    const weights = bags.map((s) => (typeof s.weight === "number" ? s.weight : null)).filter(Boolean);
+    return format(bags.length, weights);
+  }
+
   let count = 0;
   const weights = [];
 
